@@ -2,11 +2,11 @@
 -- Setup Phase
 -- ===========
 
--- local MAKE_FLUID_ICON_PRIMARY = settings.startup["BarrelFluidIcons-fluid-icon-primary"].value
+local MAKE_FLUID_ICON_PRIMARY = settings.startup["BarrelFluidIcons-fluid-icon-primary"].value
 
 local items = data.raw["item"]
 local recipes = data.raw["recipe"]
---local fluids = data.raw["fluid"]
+local fluids = data.raw["fluid"]
 
 local fluid_barrels = {}
 
@@ -42,7 +42,7 @@ for _, item in pairs(items) do
   if (string.find(item.name, "-barrel") and item.name ~= "empty-barrel")
   then
     fluid_barrels[item.name] = {
-      item = item,
+      item_prototype = item,
       recipe_fill = nil,
       recipe_empty = nil,
       fluid = nil
@@ -64,9 +64,22 @@ for barrel_name, data_table in pairs(fluid_barrels) do
   then
     data_table.recipe_empty = recipes[empty_recipe_name]
 
-    -- local fluid_name = get_recipe_result(recipes[empty_recipe_name])
-    -- local fluid_prototype = get_fluid(fluid_name)
-    -- data_table.fluid = fluid_prototype
+    local fluid_name = get_recipe_result(recipes[empty_recipe_name])
+    local fluid_prototype = get_fluid(fluid_name)
+    data_table.fluid = fluid_prototype
+  end
+end
+
+local function get_first_icon(prototype_base)
+  if (prototype_base.icons)
+  then
+    return prototype_base.icons[1]
+  else
+    return {
+      icon = prototype_base.icon,
+      icon_size = prototype_base.icon_size,
+      icon_mipmaps = prototype_base.icon_mipmaps
+    }
   end
 end
 
@@ -76,27 +89,21 @@ end
 
 -- set icons based on fluid prototype icon, and the actual recipe/barrel icon.
 for _, data_table in pairs(fluid_barrels) do
-  local item = data_table.item
+  local item_prototype = data_table.item_prototype
+  local empty_barrel = data.raw["item"]["empty-barrel"]
 
-  item.icons = table.deepcopy(data_table.recipe_fill.icons)
+  if (MAKE_FLUID_ICON_PRIMARY and empty_barrel)
+  then
+    local fluid_icon = get_first_icon(data_table.fluid)
+    local barrel_icon = get_first_icon(empty_barrel)
+    barrel_icon.scale = 0.25
+    barrel_icon.shift = { -8, -8 }
 
-  -- if (MAKE_FLUID_ICON_PRIMARY)
-  -- then
-  --   -- need to swap icons
-  -- end
-
-  -- local barrel_icon_primary = (MAKE_FLUID_ICON_PRIMARY and data_table.recipe_fill.icons[1]) or data_table.recipe_fill
-  -- local barrel_icon_secondary = (MAKE_FLUID_ICON_PRIMARY and data_table.recipe_fill) or data_table.recipe_fill.icons[1]
-
-
-  -- "lite" behavior is to just use the fill-barrel icons for the barrel item.
-
-  -- "full" behavior is to do same as above, but swap the fluid/barrel locations so the fluid is
-  -- ... more prominent
-
-  -- For fill/empty recipes, it doesn't feel necessary to change the icons.
-  -- local fill_recipe_icon_primary = 1
-  -- local fill_recipe_icon_secondary = 1
-  -- local empty_recipe_icon_primary = 1
-  -- local empty_recipe_icon_secondary = 1
+    item_prototype.icons = {
+      fluid_icon,
+      barrel_icon
+    }
+  else
+    item_prototype.icons = table.deepcopy(data_table.recipe_fill.icons)
+  end
 end
