@@ -37,9 +37,17 @@ end
 -- Putting together the data
 -- =========================
 
+NON_FLUID_BARRELS = {
+  ["empty-barrel"] = true
+}
+
+-- Compat
+require("compatibility.data-updates.dirty-fluid-containers")
+
+
 -- Stage 1
 for _, item in pairs(items) do
-  if (string.find(item.name, "-barrel") and item.name ~= "empty-barrel")
+  if (string.find(item.name, "-barrel") and not NON_FLUID_BARRELS[item.name])
   then
     fluid_barrels[item.name] = {
       item_prototype = item,
