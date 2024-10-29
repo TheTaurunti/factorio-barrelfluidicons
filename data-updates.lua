@@ -98,7 +98,7 @@ end
 -- set icons based on fluid prototype icon, and the actual recipe/barrel icon.
 for _, data_table in pairs(fluid_barrels) do
 	local item_prototype = data_table.item_prototype
-	local empty_barrel = data.raw["item"]["empty-barrel"]
+	local empty_barrel = data.raw["item"]["barrel"]
 
 	if (MAKE_FLUID_ICON_PRIMARY and empty_barrel)
 	then
