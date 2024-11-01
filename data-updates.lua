@@ -43,6 +43,7 @@ NON_FLUID_BARRELS = {
 
 -- Compat
 require("compatibility.data-updates.dirty-fluid-containers")
+require("compatibility.data-updates.pyalienlife")
 
 
 -- Stage 1
@@ -102,6 +103,8 @@ for _, data_table in pairs(fluid_barrels) do
 
 	if (MAKE_FLUID_ICON_PRIMARY and empty_barrel)
 	then
+		log(_)
+
 		local fluid_icon = get_first_icon(data_table.fluid)
 		local barrel_icon = get_first_icon(empty_barrel)
 		barrel_icon.scale = 0.25
