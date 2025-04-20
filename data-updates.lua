@@ -43,6 +43,7 @@ NON_FLUID_BARRELS = {
 
 -- Compat
 require("compatibility.data-updates.dirty-fluid-containers")
+require("compatibility.data-updates.Igrys")
 require("compatibility.data-updates.pyalienlife")
 
 
