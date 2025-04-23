@@ -8,76 +8,14 @@ local items = data.raw["item"]
 local recipes = data.raw["recipe"]
 local fluids = data.raw["fluid"]
 
+-- =====
 
--- =========================
--- Defining helper functions
--- =========================
-
-local function get_recipe_result(recipe)
-  local recipe_standard = recipe.normal or recipe
-  return (
-    recipe_standard.results and recipe_standard.results[1] and (
-      recipe_standard.results[1].name
-      or recipe_standard.results[1][1]
-    )
-  ) or recipe_standard.result
-end
-
-local function get_fluid(fluid_name)
-  for _, fluid in pairs(fluids) do
-    if (fluid.name == fluid_name)
-    then
-      return fluid
-    end
-  end
-end
-
--- =========================
--- Putting together the data
--- =========================
-
-local fluid_barrels = {}
-NON_FLUID_BARRELS = {
-  ["empty-barrel"] = true
-}
-
--- Compat
-require("compatibility.data-updates.dirty-fluid-containers")
-require("compatibility.data-updates.Igrys")
-require("compatibility.data-updates.pyalienlife")
-
-
--- Stage 1
-for _, item in pairs(items) do
-  -- Lua's string.find uses pattern matching (like regex). The $ indicates end of string.
-  if (string.find(item.name, "-barrel$") and not NON_FLUID_BARRELS[item.name])
+local function copy_icon_set(copy_from, copy_to)
+  if (copy_from.icons)
   then
-    fluid_barrels[item.name] = {
-      item_prototype = item,
-      recipe_fill = nil,
-      recipe_empty = nil,
-      fluid = nil
-    }
-  end
-end
-
--- Stage 2
-for barrel_name, data_table in pairs(fluid_barrels) do
-  local fill_recipe_name = barrel_name
-  local empty_recipe_name = "empty-" .. barrel_name
-
-  if (recipes[fill_recipe_name])
-  then
-    data_table.recipe_fill = recipes[fill_recipe_name]
-  end
-
-  if (recipes[empty_recipe_name])
-  then
-    data_table.recipe_empty = recipes[empty_recipe_name]
-
-    local fluid_name = get_recipe_result(recipes[empty_recipe_name])
-    local fluid_prototype = get_fluid(fluid_name)
-    data_table.fluid = fluid_prototype
+    copy_to.icons = table.deepcopy(copy_from.icons)
+  else
+    copy_to.icon = table.deepcopy(copy_from.icon)
   end
 end
 
@@ -94,27 +32,66 @@ local function get_first_icon(prototype_base)
   end
 end
 
--- ===============================================
--- DATA GATHERING COMPLETE!! TIME TO CHANGE THINGS
--- ===============================================
+local function make_naming_pattern_obj(item_prefix, item_postfix, recipe_prefix, recipe_postfix)
+  recipe_prefix = recipe_prefix or item_prefix
+  recipe_postfix = recipe_postfix or item_postfix
 
--- set icons based on fluid prototype icon, and the actual recipe/barrel icon.
-local empty_barrel = data.raw["item"]["barrel"]
-for _, data_table in pairs(fluid_barrels) do
-  local item_prototype = data_table.item_prototype
+  return {
+    item_fluid_prefix = item_prefix,
+    item_fluid_postfix = item_postfix,
+    recipe_fluid_prefix = recipe_prefix,
+    recipe_fluid_postfix = recipe_postfix
+  }
+end
 
-  if (MAKE_FLUID_ICON_PRIMARY and empty_barrel)
+-- =========================
+-- Putting together the data
+-- =========================
+
+FLUIDS_TO_SKIP = {}
+BARREL_LIKE_ITEMS_WITH_NAMING_PATTERNS = {}
+
+
+-- Vanilla """"Compat""""
+BARREL_LIKE_ITEMS_WITH_NAMING_PATTERNS["barrel"] = make_naming_pattern_obj("", "-barrel")
+
+
+-- ============
+-- Make changes
+-- ============
+
+for fluid_name, fluid_prototype in pairs(fluids) do
+  if (not FLUIDS_TO_SKIP[fluid_name])
   then
-    local fluid_icon = get_first_icon(data_table.fluid)
-    local barrel_icon = get_first_icon(empty_barrel)
-    barrel_icon.scale = 0.25
-    barrel_icon.shift = { -8, -8 }
+    for barrel_like_item_name, naming_pattern in pairs(BARREL_LIKE_ITEMS_WITH_NAMING_PATTERNS) do
+      local fill_recipe_name = naming_pattern.recipe_fluid_prefix .. fluid_name .. naming_pattern.recipe_fluid_postfix
+      local item_name = naming_pattern.item_fluid_prefix .. fluid_name .. naming_pattern.item_fluid_postfix
 
-    item_prototype.icons = {
-      fluid_icon,
-      barrel_icon
-    }
-  else
-    item_prototype.icons = table.deepcopy(data_table.recipe_fill.icons)
+      local filled_barrel_item = items[item_name]
+      local fill_recipe = recipes[fill_recipe_name]
+      if (filled_barrel_item and fill_recipe)
+      then
+        -- icon magic time
+        local barrel_like_item = items[barrel_like_item_name]
+        if (MAKE_FLUID_ICON_PRIMARY and barrel_like_item)
+        then
+          -- fluid icon mainly
+          local fluid_icon = get_first_icon(fluid_prototype)
+          local barrel_icon = get_first_icon(barrel_like_item)
+          barrel_icon.scale = 0.25
+          barrel_icon.shift = { -8, -8 }
+
+          filled_barrel_item.icons = {
+            fluid_icon,
+            barrel_icon
+          }
+        else
+          -- fill-barrel recipe icons are the easy way out.
+          -- > Ideally, I would use the same functions as base implementation
+          -- ... for automatic barrel recipes do, just substituting the barrel-like items
+          copy_icon_set(fill_recipe, filled_barrel_item)
+        end
+      end
+    end
   end
 end

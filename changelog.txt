@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.8
+Date: 2025-04-23
+  Features:
+    - Revamped barrel recognition logic, should no longer crash when encountering strange barrel situations
+---------------------------------------------------------------------------------------------------
 Version: 1.0.7
 Date: 2025-04-22
   Features:
