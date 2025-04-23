@@ -105,16 +105,22 @@ for _, data_table in pairs(fluid_barrels) do
 
   if (MAKE_FLUID_ICON_PRIMARY and empty_barrel)
   then
-    local fluid_icon = get_first_icon(data_table.fluid)
-    local barrel_icon = get_first_icon(empty_barrel)
-    barrel_icon.scale = 0.25
-    barrel_icon.shift = { -8, -8 }
+    if data_table.fluid
+    then
+      local fluid_icon = get_first_icon(data_table.fluid)
+      local barrel_icon = get_first_icon(empty_barrel)
+      barrel_icon.scale = 0.25
+      barrel_icon.shift = { -8, -8 }
 
-    item_prototype.icons = {
-      fluid_icon,
-      barrel_icon
-    }
+      item_prototype.icons = {
+        fluid_icon,
+        barrel_icon
+      }
+    end
   else
-    item_prototype.icons = table.deepcopy(data_table.recipe_fill.icons)
+    if data_table.recipe_fill
+    then
+      item_prototype.icons = table.deepcopy(data_table.recipe_fill.icons)
+    end
   end
 end
