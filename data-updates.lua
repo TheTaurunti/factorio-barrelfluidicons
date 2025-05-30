@@ -56,6 +56,9 @@ BARREL_LIKE_ITEMS_WITH_NAMING_PATTERNS = {}
 BARREL_LIKE_ITEMS_WITH_NAMING_PATTERNS["barrel"] = make_naming_pattern_obj("", "-barrel")
 
 
+-- Mod compat
+require("compatibility.Igrys")
+
 -- ============
 -- Make changes
 -- ============
