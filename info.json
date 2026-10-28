@@ -1,10 +1,10 @@
 {
   "name": "BarrelFluidIcons",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "title": "Barrel Fluid Icons",
   "author": "Taurunti",
   "contact": "thetaurunti@gmail.com",
-  "factorio_version": "2.0",
-  "dependencies": ["base >= 2.0", "(?) Igrys"],
+  "factorio_version": "2.1",
+  "dependencies": ["base >= 2.1", "(?) Igrys"],
   "description": "Changes the icon for barrel items to more clearly show which fluid is barreled."
 }
